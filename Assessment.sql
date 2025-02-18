@@ -72,10 +72,6 @@ VALUES
 
 
 
-SELECT * FROM t_atten_det;
-SELECT * FROM t_salary;
-SELECT * FROM t_emp;
-SELECT * FROM t_activity;
 
 --RANK() OVER(PARTITION BY E.Emp_id ORDER BY S.New_Salary DESC) AS Rank
 
@@ -90,18 +86,44 @@ WHERE (DAY(Emp_DOB)=28 AND MONTH(Emp_DOB)=2) OR (DAY(Emp_DOB)=31 AND MONTH(Emp_D
 
 --Q2.Display full name of employees who got increment in salary, previous salary, current salary, total worked hours, last worked activity and hours worked in that
 
+SELECT * FROM t_atten_det;
+SELECT * FROM t_salary;
+SELECT * FROM t_emp;
+SELECT * FROM t_activity;
+
 WITH SAL AS(
-SELECT E.Emp_id, ROW_NUMBER() OVER(PARTITION BY E.Emp_id ORDER BY S.Salary ASC) ROWN
+SELECT E.Emp_id, E.Emp_f_name, E.Emp_m_name, E.Emp_l_name, ROW_NUMBER() OVER(PARTITION BY E.Emp_id ORDER BY S.Salary ASC) ROWN
 FROM t_emp E
-JOIN t_Salary S ON E.Emp_id=S.Emp_id),
+JOIN t_salary S ON E.Emp_id=S.Emp_id
+),
 
 
 ACTIVITY AS(
-SELECT A.Emp_ID, E.Emp_f_name, E.Emp_m_name, E.Emp_l_name, S.New_Salary, ROW_NUMBER() OVER(PARTITION BY A.Emp_ID ORDER BY Atten_start_datetime DESC)
+SELECT Att.Emp_ID, E.Emp_f_name, E.Emp_m_name, E.Emp_l_name, S.New_Salary, ROW_NUMBER() OVER(PARTITION BY A.Emp_ID ORDER BY Atten_start_datetime DESC)
 FROM t_emp E
 JOIN t_attent_det Att ON E.Emp_iD=Att.Emp_id
 JOIN t_activity A ON E.Activity_id=A.Activity_id
+),
+
+Duration AS(
+SELECT Emp_id, SUM(Atten_end_hrs)
+FROM t_atten_det
+GROUP BY Emp_id
 )
 
+SELECT E.Emp_id, CONCAT(E.Emp_f_name, ' ', E.Emp_m_name, ' ', E.Emp_l_name) AS FULLNAME
+CASE WHEN 
+      COUNT(E.Emp_id)>1 THEN 'YES'
+ELSE
+'NO'
+END AS INCREMENTED
+CASE WHEN
+      COUNT(E.Emp_id>=2) THEN MIN(E.New_Salary)
+END AS previous_salary
+MAX(E.NEW_Salary) AS curr_salary
+
+FROM SAL 
+JOIN ACTIVITY ON SAL.Emp_id=ACTIVITY.Emp_id
+JOIN DURATION ON SAL.Emp_id=DURATION.EMp_id
 
 
