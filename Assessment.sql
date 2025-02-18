@@ -184,18 +184,18 @@ WHERE (DAY(Emp_DOB)=28 AND MONTH(Emp_DOB)=2) OR (DAY(Emp_DOB)=31 AND MONTH(Emp_D
 WITH SAL AS (
     SELECT  E.Emp_id, ROW_NUMBER() OVER(PARTITION BY E.Emp_id ORDER BY S.Changed_date DESC) AS ROWN, S.New_Salary, LAG(S.New_Salary) OVER(PARTITION BY E.Emp_id ORDER BY S.Changed_date DESC) AS Previous_Salary
     FROM t_emp E
-    JOIN t_salary S ON E.Emp_id = S.Emp_id
+    JOIN t_salary S ON E.Emp_id=S.Emp_id
 ),
 ACTIVITY AS (
     SELECT E.Emp_id, CONCAT(E.Emp_f_name, ' ', E.Emp_m_name, ' ', E.Emp_l_name) AS Full_Name, SUM(Att.Atten_end_hrs) AS Total_Worked_Hours, A.Activity_description AS Last_Activity,Att.Atten_end_hrs AS Last_Activity_Hours
     FROM t_emp E
-    JOIN t_atten_det Att ON E.Emp_id = Att.Emp_id
-    JOIN t_activity A ON Att.Activity_id = A.Activity_id
-    WHERE Att.Atten_start_datetime = (SELECT MAX(Atten_start_datetime) FROM t_atten_det WHERE Emp_id = E.Emp_id)
+    JOIN t_atten_det Att ON E.Emp_id=Att.Emp_id
+    JOIN t_activity A ON Att.Activity_id=A.Activity_id
+    WHERE Att.Atten_start_datetime=(SELECT MAX(Atten_start_datetime) FROM t_atten_det WHERE Emp_id=E.Emp_id)
     GROUP BY E.Emp_id, E.Emp_f_name, E.Emp_m_name, E.Emp_l_name, A.Activity_description, Att.Atten_end_hrs
 )
 SELECT  S.Emp_id, A.Full_Name, S.Previous_Salary, S.New_Salary, A.Total_Worked_Hours, A.Last_Activity, A.Last_Activity_Hours
 FROM SAL S
 JOIN ACTIVITY A ON S.Emp_id = A.Emp_id
-WHERE S.Previous_Salary < S.New_Salary
+WHERE S.Previous_Salary<S.New_Salary
 ORDER BY A.Full_Name;
