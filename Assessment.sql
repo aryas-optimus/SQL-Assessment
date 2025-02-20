@@ -43,7 +43,7 @@ Emp_Code VARCHAR(255),
 Emp_f_name VARCHAR(255) NOT NULL,
 Emp_m_name VARCHAR(255),
 Emp_l_name VARCHAR(255),
-EMP_DOB DATE,-- INT CHECK DATEDIFF(Emp_DOB, GETDATE())>=18,
+EMP_DOB DATE, INT CHECK DATEDIFF(YEAR, Emp_DOB, GETDATE())>=18,
 EMP_DOJ DATE NOT NULL
 );
 
@@ -88,7 +88,7 @@ FROM t_emp E
 WHERE (DAY(Emp_DOB)=28 AND MONTH(Emp_DOB)=2) OR (DAY(Emp_DOB)=31 AND MONTH(Emp_DOB) IN (1,3,5,7,8,10,11)) OR (DAY(Emp_DOB)=30 AND MONTH(Emp_DOB) IN (4,6,9,11));
 
 
---Q2.Display full name of employees who got increment in salary, previous salary, current salary, total worked hours, last worked activity and hours worked in that
+
 CREATE TABLE t_atten_det(
 Atten_id INT IDENTITY(1001,1),
 Emp_id INT,
@@ -163,11 +163,6 @@ VALUES
 
 
 
-SELECT * FROM t_atten_det;
-SELECT * FROM t_salary;
-SELECT * FROM t_emp;
-SELECT * FROM t_activity;
-
 --RANK() OVER(PARTITION BY E.Emp_id ORDER BY S.New_Salary DESC) AS Rank
 
 
@@ -180,6 +175,7 @@ WHERE (DAY(Emp_DOB)=28 AND MONTH(Emp_DOB)=2) OR (DAY(Emp_DOB)=31 AND MONTH(Emp_D
 
 
 --Q2.Display full name of employees who got increment in salary, previous salary, current salary, total worked hours, last worked activity and hours worked in that
+
 
 
 WITH SAL AS (
@@ -206,3 +202,4 @@ JOIN ACTIVITY A ON S.Emp_id = A.Emp_id
 JOIN TOTAL_HOURS T ON S.Emp_id = T.Emp_id
 WHERE S.Previous_Salary<S.New_Salary
 ORDER BY A.Full_Name;
+
